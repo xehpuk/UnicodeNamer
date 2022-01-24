@@ -1,8 +1,9 @@
 package de.xehpuk.unicodenamer.format;
 
 import de.xehpuk.unicodenamer.Utils;
+
+import javax.swing.*;
 import java.text.ParseException;
-import javax.swing.JFormattedTextField;
 
 /**
  * @author xehpuk <xehpuk@netbeans.org>

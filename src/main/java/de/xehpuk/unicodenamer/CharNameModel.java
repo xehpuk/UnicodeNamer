@@ -1,13 +1,13 @@
 package de.xehpuk.unicodenamer;
 
-import java.awt.Desktop;
+import javax.swing.table.AbstractTableModel;
+import java.awt.*;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import javax.swing.table.AbstractTableModel;
 
 /**
  * @author xehpuk <xehpuk@netbeans.org>
@@ -30,7 +30,7 @@ public class CharNameModel extends AbstractTableModel {
 	public static final int WIKIPEDIA_COLUMN = 10;
 	
 	private static URI fileFormat(final CharName charName) {
-		return URI.create(String.format("http://www.fileformat.info/info/unicode/char/%x/index.htm", charName.getCodePoint()));
+		return URI.create(String.format("https://www.fileformat.info/info/unicode/char/%x/index.htm", charName.getCodePoint()));
 	}
 	
 	private static URI google(final CharName charName) {
@@ -82,7 +82,6 @@ public class CharNameModel extends AbstractTableModel {
 			case CODE_POINT_COLUMN:
 				return Integer.class; // int.class does not implement Comparable
 			case UTF_8_COLUMN:
-				return byte[].class;
 			case UTF_16_COLUMN:
 				return byte[].class;
 			case CHARACTER_COLUMN:
@@ -143,7 +142,7 @@ public class CharNameModel extends AbstractTableModel {
 	
 	public void add(final int index, final CharName charName) {
 		charNames.add(index, charName);
-//		fireTableRowsInserted(index, index);
+		// fireTableRowsInserted(index, index);
 		fireTableDataChanged();
 	}
 	
@@ -154,7 +153,7 @@ public class CharNameModel extends AbstractTableModel {
 	public boolean addAll(final int index, final Collection<? extends CharName> charNames) {
 		final boolean changed = this.charNames.addAll(index, charNames);
 		if (changed) {
-//			fireTableRowsInserted(index, index + charNames.size() - 1);
+			// fireTableRowsInserted(index, index + charNames.size() - 1);
 			fireTableDataChanged();
 		}
 		return changed;
@@ -174,7 +173,7 @@ public class CharNameModel extends AbstractTableModel {
 	
 	public CharName remove(final int index) {
 		final CharName charName = charNames.remove(index);
-//		fireTableRowsDeleted(index, index);
+		// fireTableRowsDeleted(index, index);
 		fireTableDataChanged();
 		return charName;
 	}
@@ -184,7 +183,7 @@ public class CharNameModel extends AbstractTableModel {
 		for (int i = 0; i < length; i++) {
 			removed.add(charNames.remove(index));
 		}
-//		fireTableRowsDeleted(index, index + length - 1);
+		// fireTableRowsDeleted(index, index + length - 1);
 		fireTableDataChanged();
 		return removed;
 	}

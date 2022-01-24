@@ -3,46 +3,8 @@ package de.xehpuk.unicodenamer;
 import de.xehpuk.unicodenamer.format.DisplayFormatter;
 import de.xehpuk.unicodenamer.format.EditFormatter;
 import de.xehpuk.unicodenamer.format.NullFormatter;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.DefaultRowSorter;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JFormattedTextField;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSpinner;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.RowFilter;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+
+import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -52,12 +14,20 @@ import javax.swing.table.TableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.JTextComponent;
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
+import java.util.List;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 public class UnicodeNamer {
-	private final static BufferedImage icon = Utils.loadIcon("icon.png");
-	private final static BufferedImage fileFormat = Utils.loadIcon("fileFormat.png");
-	private final static BufferedImage google = Utils.loadIcon("google.png");
-	private final static BufferedImage wikipedia = Utils.loadIcon("wikipedia.png");
+	private final static BufferedImage ICON_UNICODE = Utils.loadIcon("icon.png");
+	private final static BufferedImage ICON_FILE_FORMAT = Utils.loadIcon("fileFormat.png");
+	private final static BufferedImage ICON_GOOGLE = Utils.loadIcon("google.png");
+	private final static BufferedImage ICON_WIKIPEDIA = Utils.loadIcon("wikipedia.png");
 	
 	public static void main(final String... args) {
 		if (args.length > 0) {
@@ -67,12 +37,9 @@ public class UnicodeNamer {
 				System.out.printf("%s: %s, %s%n", cn.getCodePointChars(), cn.getCodePointString(), cn.getName());
 			}
 		} else {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					UIManager.put("swing.boldMetal", Boolean.FALSE);
-					new UnicodeNamer(1050, 500).start();
-				}
+			SwingUtilities.invokeLater(() -> {
+				UIManager.put("swing.boldMetal", Boolean.FALSE);
+				new UnicodeNamer(1050, 500).start();
 			});
 		}
 	}
@@ -132,28 +99,13 @@ public class UnicodeNamer {
 		final EditFormatter editFormatter = new EditFormatter();
 		textField.setFormatterFactory(new DefaultFormatterFactory(displayFormatter, displayFormatter, editFormatter, nullFormatter));
 		
-		final ActionListener codePointListener = new ActionListener() {
-			 @Override
-			 public void actionPerformed(final ActionEvent e) {
-				 inputTextComponent.replaceSelection(CharName.valueOf((int) codePointSpinner.getValue()).getCodePointChars());
-			 }
-		 };
+		final ActionListener codePointListener = e -> inputTextComponent.replaceSelection(CharName.valueOf((int) codePointSpinner.getValue()).getCodePointChars());
 		textField.addActionListener(codePointListener);
 		insertCodePointButton.addActionListener(codePointListener);
 		
-		uniqueCheckBox.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(final ItemEvent e) {
-				uniqueCheckBoxChanged();
-			}
-		});
+		uniqueCheckBox.addItemListener(e -> uniqueCheckBoxChanged());
 		
-		filterCheckBox.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(final ItemEvent e) {
-				filterCheckBoxChanged();
-			}
-		});
+		filterCheckBox.addItemListener(e -> filterCheckBoxChanged());
 		
 		filterTextComponent.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
@@ -236,34 +188,27 @@ public class UnicodeNamer {
 		utf16Column.setMaxWidth(80);
 		utf16Column.setMinWidth(40);
 		utf16Column.setCellRenderer(utfCellRenderer);
+		@SuppressWarnings("unchecked")
 		final DefaultRowSorter<? extends TableModel, Integer> rowSorter = (DefaultRowSorter<? extends TableModel, Integer>) output.getRowSorter();
-		final DefaultRowSorter<CharNameModel, Integer> newRowSorter = new DefaultRowSorter<CharNameModel, Integer>() {
-			private final Comparator<byte[]> bytesComparator = new Comparator<byte[]>() {
-				@Override
-				public int compare(final byte[] bs, final byte[] bs2) {
-					final int bsLength = bs.length;
-					final int bs2Length = bs2.length;
-					for (int i = 0, m = Math.min(bsLength, bs2Length); i < m; i++) {
-						final int bc = Integer.compare(bs[i] & 0xFF, bs2[i] & 0xFF);
-						if (bc == 0) {
-							continue;
-						}
-//						System.out.printf("%d: %s, %s%n", bc, Utils.hex(bs), Utils.hex(bs2));
-						return bc;
+		final DefaultRowSorter<CharNameModel, Integer> newRowSorter = new DefaultRowSorter<>() {
+			private final Comparator<byte[]> bytesComparator = (bs, bs2) -> {
+				final int bsLength = bs.length;
+				final int bs2Length = bs2.length;
+				for (int i = 0, m = Math.min(bsLength, bs2Length); i < m; i++) {
+					final int bc = Integer.compare(bs[i] & 0xFF, bs2[i] & 0xFF);
+					if (bc == 0) {
+						continue;
 					}
-					return Integer.compare(bsLength, bs2Length);
+					// System.out.printf("%d: %s, %s%n", bc, Utils.hex(bs), Utils.hex(bs2));
+					return bc;
 				}
+				return Integer.compare(bsLength, bs2Length);
 			};
 
-			private final Comparator<Character.UnicodeBlock> blockComparator = new Comparator<Character.UnicodeBlock>() {
-				@Override
-				public int compare(final Character.UnicodeBlock b, final Character.UnicodeBlock b2) {
-					return String.CASE_INSENSITIVE_ORDER.compare(b.toString(), b2.toString());
-				}
-			};
-			
+			private final Comparator<Character.UnicodeBlock> blockComparator = (b, b2) -> String.CASE_INSENSITIVE_ORDER.compare(b.toString(), b2.toString());
+
 			{
-				setModelWrapper(new ModelWrapper<CharNameModel, Integer>() {
+				setModelWrapper(new ModelWrapper<>() {
 					@Override
 					public CharNameModel getModel() {
 						return model;
@@ -309,7 +254,7 @@ public class UnicodeNamer {
 		columnModel.getColumn(CharNameModel.BLOCK_COLUMN).setPreferredWidth(125);
 		columnModel.getColumn(CharNameModel.NAME_COLUMN).setPreferredWidth(215);
 		if (Desktop.isDesktopSupported()) {
-			final TableUriBrowseButton fileFormatButtonColumn = new TableUriBrowseButton(new ImageIcon(fileFormat));
+			final TableUriBrowseButton fileFormatButtonColumn = new TableUriBrowseButton(new ImageIcon(ICON_FILE_FORMAT));
 			fileFormatButtonColumn.setMnemonic(KeyEvent.VK_F);
 			output.addMouseListener(fileFormatButtonColumn);
 			final TableColumn fileFormatColumn = columnModel.getColumn(CharNameModel.FILE_FORMAT_COLUMN);
@@ -317,7 +262,7 @@ public class UnicodeNamer {
 			fileFormatColumn.setCellRenderer(fileFormatButtonColumn);
 			fileFormatColumn.setMaxWidth(60);
 			fileFormatColumn.setMinWidth(60);
-			final TableUriBrowseButton googleButtonColumn = new TableUriBrowseButton(new ImageIcon(google));
+			final TableUriBrowseButton googleButtonColumn = new TableUriBrowseButton(new ImageIcon(ICON_GOOGLE));
 			googleButtonColumn.setMnemonic(KeyEvent.VK_G);
 			output.addMouseListener(googleButtonColumn);
 			final TableColumn googleColumn = columnModel.getColumn(CharNameModel.GOOGLE_COLUMN);
@@ -325,7 +270,7 @@ public class UnicodeNamer {
 			googleColumn.setCellRenderer(googleButtonColumn);
 			googleColumn.setMaxWidth(60);
 			googleColumn.setMinWidth(60);
-			final TableUriBrowseButton wikipediaButtonColumn = new TableUriBrowseButton(new ImageIcon(wikipedia));
+			final TableUriBrowseButton wikipediaButtonColumn = new TableUriBrowseButton(new ImageIcon(ICON_WIKIPEDIA));
 			wikipediaButtonColumn.setMnemonic(KeyEvent.VK_W);
 			output.addMouseListener(wikipediaButtonColumn);
 			final TableColumn wikipediaColumn = columnModel.getColumn(CharNameModel.WIKIPEDIA_COLUMN);
@@ -354,7 +299,7 @@ public class UnicodeNamer {
 		final JScrollPane contentPaneScroller = new JScrollPane(contentPane);
 		frame.setContentPane(contentPaneScroller);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setIconImage(icon);
+		frame.setIconImage(ICON_UNICODE);
 		frame.pack();
 		frame.setSize(frame.getWidth(), height);
 		frame.setLocationRelativeTo(null);
@@ -369,7 +314,7 @@ public class UnicodeNamer {
 		try {
 			return documentToModelLength(length);
 		} catch (final BadLocationException ble) {
-			throw new IndexOutOfBoundsException(String.format("%s, offset=%d, length=%d", ble.toString(), 0, length));
+			throw new IndexOutOfBoundsException(String.format("%s, offset=%d, length=%d", ble, 0, length));
 		}
 	}
 	
@@ -392,7 +337,7 @@ public class UnicodeNamer {
 			final List<CharName> charNames = charNames(text);
 			model.addAll(documentToModelLength(offset), charNames);
 		} catch (final BadLocationException ble) {
-			throw new IndexOutOfBoundsException(String.format("%s, offset=%d, length=%d", ble.toString(), offset, length));
+			throw new IndexOutOfBoundsException(String.format("%s, offset=%d, length=%d", ble, offset, length));
 		}
 		inputTextChanged();
 	}
@@ -405,7 +350,7 @@ public class UnicodeNamer {
 		try {
 			model.remove(documentToModelLength(offset), length);
 		} catch (final BadLocationException ble) {
-			throw new IndexOutOfBoundsException(String.format("%s, offset=%d, length=%d", ble.toString(), offset, length));
+			throw new IndexOutOfBoundsException(String.format("%s, offset=%d, length=%d", ble, offset, length));
 		}
 		inputTextChanged();
 	}
@@ -445,8 +390,8 @@ public class UnicodeNamer {
 			if (index == 0) {
 				addedCharNames.clear();
 			}
-//			System.out.printf("%d: %s%n", index, model.get(index).getCodePointChars());
-//			return model.isFirstOccurrence(index);
+			// System.out.printf("%d: %s%n", index, model.get(index).getCodePointChars());
+			// return model.isFirstOccurrence(index);
 			return addedCharNames.add(model.get(index));
 		}
 	}
@@ -468,7 +413,10 @@ public class UnicodeNamer {
 					} catch (final PatternSyntaxException pse) {
 						filterTextComponent.setForeground(Color.RED);
 						final String lineBreak = "<br>";
-						filterTextComponent.setToolTipText("<html>" + Utils.encodeHtml(pse.getLocalizedMessage()).replaceFirst(System.lineSeparator(), lineBreak + "<code>").replaceFirst(System.lineSeparator(), lineBreak + "<font color=\"red\"><b>").replaceAll("\\s", "&nbsp;") + "</b></font></code></html>");
+						filterTextComponent.setToolTipText("<html>" + Utils.encodeHtml(pse.getLocalizedMessage())
+								.replaceFirst(System.lineSeparator(), lineBreak + "<code>")
+								.replaceFirst(System.lineSeparator(), lineBreak + "<font color=\"red\"><b>")
+								.replaceAll("\\s", "&nbsp;") + "</b></font></code></html>");
 					}
 				}
 			}

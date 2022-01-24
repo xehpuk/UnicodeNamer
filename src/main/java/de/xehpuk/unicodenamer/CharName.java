@@ -3,17 +3,17 @@ package de.xehpuk.unicodenamer;
 import java.nio.charset.StandardCharsets;
 
 public final class CharName implements Comparable<CharName> {
-	private static final CharName[] cache = new CharName[128];
+	private static final CharName[] ASCII_CACHE = new CharName[128];
 	
 	static {
-		for (int i = 0, m = cache.length; i < m; i++) {
-			cache[i] = new CharName(i);
+		for (int i = 0, m = ASCII_CACHE.length; i < m; i++) {
+			ASCII_CACHE[i] = new CharName(i);
 		}
 	}
 	
 	public static CharName valueOf(final int codePoint) {
-		if (codePoint >= 0 && codePoint < cache.length) {
-			return cache[codePoint];
+		if (codePoint >= 0 && codePoint < ASCII_CACHE.length) {
+			return ASCII_CACHE[codePoint];
 		}
 		if (Character.isValidCodePoint(codePoint)) {
 			return new CharName(codePoint);

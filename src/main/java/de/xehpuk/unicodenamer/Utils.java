@@ -1,15 +1,13 @@
 package de.xehpuk.unicodenamer;
 
-import java.awt.Font;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.plaf.FontUIResource;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
-import javax.imageio.ImageIO;
-import javax.swing.UIManager;
-import javax.swing.plaf.FontUIResource;
 
 /**
  * @author xehpuk <xehpuk@netbeans.org>
@@ -24,7 +22,9 @@ public class Utils {
 		try {
 			final String specVersion = ManagementFactory.getRuntimeMXBean().getSpecVersion();
 			final int version = Integer.parseInt(specVersion.substring(specVersion.indexOf('.')));
-			return (version <= COMPILER_VERSION) ? Character.MAX_CODE_POINT : Character.class.getDeclaredField("MAX_CODE_POINT").getInt(null);
+			return version <= COMPILER_VERSION
+					? Character.MAX_CODE_POINT
+					: Character.class.getDeclaredField("MAX_CODE_POINT").getInt(null);
 		} catch (final NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | StringIndexOutOfBoundsException e) {
 			// ignore and fall back to version <= COMPILER_VERSION
 			return Character.MAX_CODE_POINT;
@@ -78,7 +78,7 @@ public class Utils {
 	
 	public static void installFont(final String name) {
 		final Font newFont = new FontUIResource(name, Font.PLAIN, 0);
-		final Enumeration keys = UIManager.getDefaults().keys();
+		final Enumeration<Object> keys = UIManager.getDefaults().keys();
 		while (keys.hasMoreElements()) {
 			final Object key = keys.nextElement();
 			final Font oldFont = UIManager.getFont(key);

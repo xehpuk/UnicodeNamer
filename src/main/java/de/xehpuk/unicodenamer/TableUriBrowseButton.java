@@ -1,20 +1,13 @@
 package de.xehpuk.unicodenamer;
 
-import java.awt.Desktop;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.*;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.net.URI;
-import javax.swing.AbstractCellEditor;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JTable;
-import javax.swing.UIManager;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
 
 /**
  * The ButtonColumn class provides a renderer and an editor that looks like a
@@ -46,17 +39,14 @@ public class TableUriBrowseButton extends AbstractCellEditor implements TableCel
 		editButton = new JButton();
 		editButton.setOpaque(false);
 		editButton.setFocusPainted(false);
-		editButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(final ActionEvent e) {
-				final int editingRow = table.getEditingRow();
-				if (editingRow >= 0) {
-					fireEditingStopped();
-					try {
-						Desktop.getDesktop().browse((URI) table.getValueAt(editingRow, column));
-					} catch (final IOException ieo) {
-						Toolkit.getDefaultToolkit().beep();
-					}
+		editButton.addActionListener(e -> {
+			final int editingRow = table.getEditingRow();
+			if (editingRow >= 0) {
+				fireEditingStopped();
+				try {
+					Desktop.getDesktop().browse((URI) table.getValueAt(editingRow, column));
+				} catch (final IOException ieo) {
+					Toolkit.getDefaultToolkit().beep();
 				}
 			}
 		});
@@ -109,7 +99,7 @@ public class TableUriBrowseButton extends AbstractCellEditor implements TableCel
 	public void mouseClicked(MouseEvent e) {}
 	
 	/*
-	 *  When the mouse is pressed the editor is invoked. If you then then drag
+	 *  When the mouse is pressed the editor is invoked. If you then drag
 	 *  the mouse to another cell before releasing it, the editor is still
 	 *  active. Make sure editing is stopped when the mouse is released.
 	 */

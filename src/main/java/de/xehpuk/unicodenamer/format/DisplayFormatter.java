@@ -1,6 +1,7 @@
 package de.xehpuk.unicodenamer.format;
 
 import de.xehpuk.unicodenamer.CharName;
+
 import java.text.ParseException;
 
 /**
